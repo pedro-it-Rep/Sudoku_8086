@@ -14,6 +14,9 @@ TITLE Sudoku_PedroTrevisan_RafaelPerroni
 	CMDEND	    DB "|  x - Encerrar o jogo                                |$"
     BOUNDDOWN	DB "|=====================================================|$"
 
+    GAME_LINE   DB "------------------------------------- $"
+    GAME_COLUM  DB "|   |   |   |   |   |   |   |   |   | $"
+
     ; General Usage Prints
     END_GAME    DB "Obrigado por jogar!!!$"
     OBJ_GAME    DB "O objetivo do jogo eh completar todos os quadrados utilizando numeros de 1 a 9.$"
@@ -174,6 +177,16 @@ playGame PROC
 
     call printMap
 
+    NewLine
+
+        MOV AH, 09h
+    LEA DX, BACKMENU
+    INT 21h
+
+    ; Waits for a ENTER
+    MOV AH, 01h
+    INT 21H
+
 playGame ENDP
 
 ;Function Name: howToPlay
@@ -197,12 +210,12 @@ howToPlay PROC
     NewLine
 
     ; Message to indicate how to turn back to the menu
-    MOV AH, 09
+    MOV AH, 09h
     LEA DX, BACKMENU
     INT 21h
 
     ; Waits for a ENTER
-    MOV AH, 1
+    MOV AH, 01h
     INT 21H
 
     call printMenu
@@ -213,6 +226,33 @@ howToPlay ENDP
 ;Register used: None
 printMap proc
 
+    MOV AH, 09h
+    LEA DX, GAME_LINE
+    INT 21h
+
+    NewLine
+
+    XOR CX, CX
+    MOV CX, 9
+
+printES:
+
+    MOV AH, 09h
+    LEA DX, GAME_COLUM
+    INT 21h
+
+    NewLine
+
+    CMP CX, 0
+    JZ SAI
+    MOV AH, 09h
+    LEA DX, GAME_LINE
+    INT 21h
+    NewLine
+    LOOP printES
+
+SAI:
+    RET
 printMap endp
 
 End MAIN
