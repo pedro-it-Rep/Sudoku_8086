@@ -17,6 +17,11 @@ TITLE Sudoku_PedroTrevisan_RafaelPerroni
     GAME_LINE   DB "------------------------------------- $"
     GAME_COLUM  DB "|   |   |   |   |   |   |   |   |   | $"
 
+    ; Input Prints
+    MSG_LINHA DB "Digite o numero da linha: $"
+    MSG_COLUNA DB "Digite o numero da coluna: $"
+    MSG_RESP DB "Digite o numero da resposta: $"
+
     ; General Usage Prints
     END_GAME    DB "Obrigado por jogar!!!$"
     OBJ_GAME    DB "O objetivo do jogo eh completar todos os quadrados utilizando numeros de 1 a 9.$"
@@ -58,6 +63,8 @@ MAIN PROC
     MOV DS,AX
 
     call printMenu
+
+    CALL getInput
 
 ; End of program
 FIM:
@@ -254,5 +261,63 @@ printES:
 SAI:
     RET
 printMap endp
+
+;Function Name: getInput
+;Description: Funtion used only to get number inputs
+;Register used: None
+getInput proc
+
+    NUM_INVALID_LINHA:
+    NewLine
+    LEA DX, MSG_LINHA
+    MOV AH,09h
+    INT 21h
+    
+    MOV ah, 01H       
+    INT 21H
+
+    MOV DL, AL
+    SUB DL, 48 
+    CMP DL, 9 ;Compara se o numero recebido é maior que 9, se sim ele retorna para receber um caracter valido
+    JA NUM_INVALID_LINHA
+
+    MOV CL, DL ;Guarda a linha em CL
+
+    NUM_INVALID_COLUNA:
+    NewLine
+    LEA DX, MSG_COLUNA
+    MOV AH,09h
+    INT 21h
+    
+    MOV ah, 01H       
+    INT 21H
+
+    MOV DL, AL
+    SUB DL, 48 
+    CMP DL, 9 ;Compara se o numero recebido é maior que 9, se sim ele retorna para receber um caracter valido
+    JA NUM_INVALID_COLUNA
+
+    MOV CH, DL ;Guarda a linha em CH
+
+    NUM_INVALID_RESP:
+    NewLine
+    LEA DX, MSG_RESP
+    MOV AH,09h
+    INT 21h
+    
+    MOV ah, 01H       
+    INT 21H
+
+    MOV DL, AL
+    SUB DL, 48 
+    CMP DL, 9 ;Compara se o numero recebido é maior que 9, se sim ele retorna para receber um caracter valido
+    JA NUM_INVALID_RESP 
+
+    MOV BH, DL ;Guarda a linha em BH
+
+    NewLine
+              
+    RET
+getInput endp
 
 End MAIN
