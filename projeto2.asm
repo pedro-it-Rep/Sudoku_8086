@@ -17,19 +17,67 @@ TITLE Sudoku_PedroTrevisan_RafaelPerroni
     GAME_LINE   DB "------------------------------------- $"
     GAME_COLUM  DB "|   |   |   |   |   |   |   |   |   | $"
 
+    ; General Usage Prints
+    END_GAME    DB "Obrigado por jogar!!!$"
+    OBJ_GAME    DB "O objetivo do jogo eh completar todos os quadrados utilizando numeros de 1 a 9.$"
+    REGRAS      DB "REGRA: Nao podem haver numeros repetidos nas linhas horizontais e verticais, assim como nas sub-Matrizes $"
+    BACKMENU    DB "<Pressione ENTER para voltar para o Menu> $"
+    WRONG       DB "Resposta incorreta !!! $"
+
+    ; Game Maps
+    MAP_GAME1	DB  36h, 30h, 32h, 37h, 30h, 30h, 39h, 30h, 34h,
+                DB  30h, 39h, 30h, 34h, 33h, 36h, 37h, 30h, 30h,
+                DB  30h, 33h, 30h, 30h, 30h, 30h, 30h, 30h, 31h,
+                DB  30h, 30h, 30h, 30h, 36h, 30h, 30h, 30h, 38h,
+                DB  30h, 30h, 31h, 32h, 30h, 33h, 36h, 30h, 30h,
+                DB  38h, 30h, 30h, 30h, 34h, 30h, 30h, 30h, 30h,
+                DB  32h, 30h, 30h, 30h, 30h, 30h, 30h, 37h, 30h,
+                DB  30h, 30h, 35h, 36h, 32h, 34h, 30h, 38h, 30h,
+                DB  34h, 30h, 36h, 30h, 30h, 39h, 35h, 30h, 33h
+    
+    SOL_GAME1   DB  36h, 35h, 32h, 37h, 31h, 38h, 39h, 33h, 34h,
+                DB  31h, 39h, 38h, 34h, 33h, 36h, 37h, 35h, 32h,
+                DB  37h, 33h, 34h, 35h, 39h, 32h, 38h, 36h, 31h,
+                DB  39h, 32h, 37h, 31h, 36h, 35h, 33h, 34h, 38h,
+                DB  35h, 34h, 31h, 32h, 38h, 33h, 36h, 39h, 37h,
+                DB  38h, 36h, 33h, 39h, 34h, 37h, 32h, 31h, 35h,
+                DB  32h, 38h, 39h, 33h, 35h, 31h, 34h, 37h, 36h,
+                DB  33h, 37h, 35h, 36h, 32h, 34h, 31h, 38h, 39h,
+                DB  34h, 31h, 36h, 38h, 37h, 39h, 35h, 32h, 33h
+
+    MAP_GAME2	DB  34h, 30h, 30h, 33h, 30h, 38h, 30h, 30h, 36h,
+                DB  32h, 33h, 30h, 30h, 36h, 30h, 34h, 30h, 30h,
+                DB  30h, 30h, 39h, 34h, 30h, 30h, 37h, 30h, 30h,
+                DB  38h, 39h, 30h, 37h, 30h, 30h, 30h, 30h, 30h,
+                DB  35h, 30h, 30h, 30h, 30h, 30h, 39h, 31h, 30h,
+                DB  30h, 36h, 30h, 30h, 30h, 30h, 30h, 30h, 37h,
+                DB  30h, 30h, 38h, 30h, 31h, 30h, 30h, 34h, 33h,
+                DB  30h, 34h, 31h, 30h, 30h, 30h, 30h, 36h, 30h,
+                DB  30h, 30h, 30h, 38h, 30h, 32h, 30h, 37h, 30h
+    
+    SOL_GAME2   DB  34h, 31h, 35h, 33h, 37h, 38h, 32h, 39h, 36h,
+                DB  32h, 33h, 37h, 31h, 36h, 39h, 34h, 38h, 35h,
+                DB  36h, 38h, 39h, 34h, 32h, 35h, 37h, 33h, 31h,
+                DB  38h, 39h, 33h, 37h, 35h, 31h, 36h, 32h, 34h,
+                DB  35h, 37h, 34h, 32h, 33h, 36h, 39h, 31h, 38h,
+                DB  31h, 36h, 32h, 39h, 38h, 34h, 33h, 35h, 37h,
+                DB  39h, 32h, 38h, 36h, 31h, 37h, 35h, 34h, 33h,
+                DB  37h, 34h, 31h, 35h, 39h, 33h, 38h, 36h, 32h,
+                DB  33h, 35h, 36h, 38h, 34h, 32h, 31h, 37h, 39h
+    ;Errors Messages
+    INVOPT      DB "Opcao Invalida. Tente Novamente $"
+
     ; Input Prints
     MSG_LINHA DB "Digite o numero da linha: $"
     MSG_COLUNA DB "Digite o numero da coluna: $"
     MSG_RESP DB "Digite o numero da resposta: $"
 
-    ; General Usage Prints
-    END_GAME    DB "Obrigado por jogar!!!$"
-    OBJ_GAME    DB "O objetivo do jogo eh completar todos os quadrados utilizando numeros de 1 a 9.$"
-    REGRAS      DB "REGRA: Nao podem haver numeros repetidos nas linhas horizontais e verticais, assim como nas sub-Matrizes $"
-    BACKMENU    DB "Pressione ENTER para voltar para o Menu $"
-
-    ;Errors Messages
-    INVOPT      DB "Opcao Invalida. Tente Novamente $"
+    ;Variables
+    ROW         EQU 9
+    COLUMN      EQU 9
+    START_COL   DB ?
+    START_ROW   DB ?
+    BACKUP_BX   DW ?
 
 .CODE
 
@@ -54,6 +102,7 @@ ClearScreen MACRO
     MOV AX,3H			
 	INT 10H	
 ENDM
+
 ; ----------------------------------------------------- MACROS ---------------------------------------------------------------
 
 ; ----------------------------------------------------- MAIN PROC ------------------------------------------------------------
@@ -63,8 +112,6 @@ MAIN PROC
     MOV DS,AX
 
     call printMenu
-
-    CALL getInput
 
 ; End of program
 FIM:
@@ -184,9 +231,23 @@ playGame PROC
 
     call printMap
 
+    MOV START_COL, 2
+    MOV START_ROW, 1
+    call gotoxy
+    LEA BX, MAP_GAME1
+    
+    MOV BACKUP_BX, BX
+
+    call printNumbers
+
+    NewLine
+    NewLine
+    NewLine
     NewLine
 
-        MOV AH, 09h
+    CALL getInput
+
+    MOV AH, 09h
     LEA DX, BACKMENU
     INT 21h
 
@@ -262,6 +323,49 @@ SAI:
     RET
 printMap endp
 
+;Function Name: printNumbers
+;Description: Funtion used to print the initial game numbers inside de game structure
+;Register used: None
+printNumbers PROC
+
+    MOV AH,02
+    MOV CX,ROW
+outer:
+    MOV START_COL, 2
+    call gotoxy
+    MOV DI,COLUMN
+    XOR SI,SI
+inner:
+    MOV DL, [BX][SI]
+    INT 21H
+    INC SI
+    ADD START_COL, 4
+    call gotoxy
+    DEC DI
+    JNZ inner
+    ADD START_ROW, 2
+    ADD BX,COLUMN
+    LOOP outer
+    RET
+    
+printNumbers ENDP
+
+;Function Name: gotoxy (MACRO)
+;Description: Funtion used to define the print position of the cursor
+;Register used: None
+gotoxy PROC
+    PUSH SI
+    PUSH BX
+    mov ah,02h
+    mov bh, 00h
+    mov dl,START_COL
+    mov dh,START_ROW
+    int 10h
+    POP BX
+    POP SI
+    RET
+gotoxy ENDP
+
 ;Function Name: getInput
 ;Description: Funtion used only to get number inputs
 ;Register used: None
@@ -320,4 +424,43 @@ getInput proc
     RET
 getInput endp
 
+;Function Name: checkEntry
+;Description: Funtion used only to get number inputs
+;Register used: None
+checkEntry proc
+
+
+checkEntry endp
+
+;Function Name: comperResp
+;Description: Funtion used compare de awnser with the solution
+;Register used: 
+comperResp PROC
+    XOR AX, AX
+    MOV AL, CH ;Recebe a Coluna 
+    XOR CH, CH ;Zera a parte alta do registrador e mantem linha em CL
+    MOV DH, BH ;Recebe a Resposta
+
+    XOR SI, SI
+
+    LEA BX, SOL_GAME1
+    ADD BX, AX
+    ADD SI, CX
+    MOV DL, [BX][SI]
+    CMP DH, DL
+    JE rightResp
+
+    LEA DX, WRONG ;Imprimi mensagem de erro
+    MOV AH,09h
+    INT 21h
+    JMP FIMPROC ;Pula para o RET
+
+    rightResp:
+    LEA BX, MAP_GAME1 ;Carrega matriz mapa
+    ADD BX, AX
+    MOV [BX][SI], DH ;Salva o valor correto na matriz mapa
+    FIMPROC:
+
+    RET
+comperResp ENDP
 End MAIN
