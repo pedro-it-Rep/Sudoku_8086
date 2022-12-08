@@ -22,6 +22,8 @@ TITLE Sudoku_PedroTrevisan_RafaelPerroni
     OBJ_GAME    DB "O objetivo do jogo eh completar todos os quadrados utilizando numeros de 1 a 9.$"
     REGRAS      DB "REGRA: Nao podem haver numeros repetidos nas linhas horizontais e verticais, assim como nas sub-Matrizes $"
     BACKMENU    DB "<Pressione ENTER para voltar para o Menu> $"
+    CONTINUE    DB "<Pressione ENTER para continuar> $"
+    WRONG       DB "Resposta incorreta !!! $"
 
     ; Game Maps
     MAP_GAME1	DB  36h, 30h, 32h, 37h, 30h, 30h, 39h, 30h, 34h,
@@ -67,16 +69,20 @@ TITLE Sudoku_PedroTrevisan_RafaelPerroni
     INVOPT      DB "Opcao Invalida. Tente Novamente $"
 
     ; Input Prints
-    MSG_LINHA DB "Digite o numero da linha: $"
-    MSG_COLUNA DB "Digite o numero da coluna: $"
-    MSG_RESP DB "Digite o numero da resposta: $"
+    MSG_LINHA   DB "Digite o numero da linha: $"
+    MSG_COLUNA  DB "Digite o numero da coluna: $"
+    MSG_RESP    DB "Digite o numero da resposta: $"
+    GAME_SELECT DB "Qual mapa voce deseja jogar? $"
+    MAP1        DB "1 - Mapa 1$"
+    MAP2        DB "2 - Mapa 2$"
 
     ;Variables
     ROW         EQU 9
     COLUMN      EQU 9
     START_COL   DB ?
     START_ROW   DB ?
-    BACKUP_BX   DW ?
+    ENTRY       DB ?
+    MAP         DB ?
 
 .CODE
 
@@ -188,74 +194,6 @@ printMenu PROC
     
 printMenu ENDP
 
-;Function Name: checkInput
-;Description: Funtion used to verify user Input on Menu
-;Register used: None
-checkInput PROC
-
-    MOV AH,08h
-    INT 21H
-    MOV BL, AL ; Get answer and save it in BL to compare to our options
-
-    ; CMP 1
-    CMP BL, 31h
-    JE playGame
-
-    ; CMP 2
-    CMP BL, 32h
-    JE howToPlay
-
-    ; CMP x
-    CMP BL, 78h
-    JNE InvalidInput
-
-    JMP FIM
-
-InvalidInput:
-    ; Invalid Option Insert -> Print error and ask for it again
-    MOV AH, 09
-    LEA DX, INVOPT
-    INT 21h
-
-    NewLine
-
-    JMP checkInput
-checkInput ENDP
-
-;Function Name: playGame
-;Description: Funtion used to print the game and check user options (mouse Click and number input)
-;Register used: 
-playGame PROC
-    ClearScreen
-
-    call printMap
-
-    MOV START_COL, 2
-    MOV START_ROW, 1
-    call gotoxy
-    LEA BX, MAP_GAME1
-    
-    MOV BACKUP_BX, BX
-
-    call printNumbers
-
-    NewLine
-    NewLine
-    NewLine
-    NewLine
-
-    CALL getInput
-
-    MOV AH, 09h
-    LEA DX, BACKMENU
-    INT 21h
-
-    ; Waits for a ENTER
-    MOV AH, 01h
-    INT 21H
-
-playGame ENDP
-
 ;Function Name: howToPlay
 ;Description: Funtion used only to print the game Rules
 ;Register used: None
@@ -287,6 +225,129 @@ howToPlay PROC
 
     call printMenu
 howToPlay ENDP
+
+;Function Name: checkInput
+;Description: Funtion used to verify user Input on Menu
+;Register used: None
+checkInput PROC
+
+    MOV AH,08h
+    INT 21H
+    MOV BL, AL ; Get answer and save it in BL to compare to our options
+
+    ; CMP 1
+    CMP BL, 31h
+    JE selectMap
+
+    ; CMP 2
+    CMP BL, 32h
+    JE howToPlay
+
+    ; CMP x
+    CMP BL, 78h
+    JNE InvalidInput
+
+    JMP FIM
+
+InvalidInput:
+    ; Invalid Option Insert -> Print error and ask for it again
+    MOV AH, 09
+    LEA DX, INVOPT
+    INT 21h
+
+    NewLine
+
+    JMP checkInput
+checkInput ENDP
+
+;Function Name: selectMap
+;Description: Funtion used to select the game map
+;Register used: 
+selectMap PROC
+    ClearScreen
+
+    MOV AH, 09
+    LEA DX, GAME_SELECT
+    INT 21h
+
+    NewLine
+
+    MOV AH, 09
+    LEA DX, MAP1
+    INT 21h
+
+    NewLine
+
+    MOV AH, 09
+    LEA DX, MAP2
+    INT 21h
+
+    NewLine
+
+    MOV AH,08h
+    INT 21H
+    MOV BL, AL ; Get answer and save it in BL to compare to our options
+
+    ; CMP 1
+    CMP BL, 31h
+    JE MAP1_SLC
+
+    ; CMP 2
+    CMP BL, 32h
+    JE MAP2_SLC
+
+    ; Invalid Option Insert -> Print error and ask for it again
+    MOV AH, 09
+    LEA DX, INVOPT
+    INT 21h
+
+    JMP selectMap
+
+MAP1_SLC:
+    MOV MAP, 31h
+    call playGame
+
+MAP2_SLC:
+    MOV MAP, 32h
+    call playGame
+selectMap ENDP
+
+;Function Name: playGame
+;Description: Funtion used to print the game
+;Register used: 
+playGame PROC
+    ClearScreen
+
+    ; Check if map selected is 1 or 2
+    CMP MAP, 31h
+    JE MAP_1
+    LEA BX, MAP_GAME2
+    JMP GAME
+
+MAP_1:
+    LEA BX, MAP_GAME1
+    JMP GAME
+
+GAME:
+    call printMap
+
+    ; Define print location
+    MOV START_COL, 2
+    MOV START_ROW, 1
+    call gotoxy
+
+    call printNumbers
+
+    NewLine
+    NewLine
+
+    ; Get Player Input and check it
+    CALL getInput
+    CALL comperResp
+
+    JMP playGame
+
+playGame ENDP
 
 ;Function Name: printMap
 ;Description: Funtion used only to print the game structure
@@ -336,6 +397,10 @@ outer:
     XOR SI,SI
 inner:
     MOV DL, [BX][SI]
+    CMP DL, 13h
+    JE NotPrint
+    CMP DL, 30h
+    JE NotPrint
     INT 21H
     INC SI
     ADD START_COL, 4
@@ -346,13 +411,25 @@ inner:
     ADD BX,COLUMN
     LOOP outer
     RET
-    
+
+NotPrint:
+    INC SI
+    ADD START_COL, 4
+    call gotoxy
+    DEC DI
+    JNZ inner
+    ADD START_ROW, 2
+    ADD BX,COLUMN
+    LOOP outer
+    RET
+
 printNumbers ENDP
 
-;Function Name: gotoxy (MACRO)
+;Function Name: gotoxy
 ;Description: Funtion used to define the print position of the cursor
 ;Register used: None
 gotoxy PROC
+    ; Uses int 10h to define cursor position
     PUSH SI
     PUSH BX
     mov ah,02h
@@ -370,7 +447,7 @@ gotoxy ENDP
 ;Register used: None
 getInput proc
 
-    NUM_INVALID_LINHA:
+NUM_INVALID_LINHA:
     NewLine
     LEA DX, MSG_LINHA
     MOV AH,09h
@@ -386,7 +463,9 @@ getInput proc
 
     MOV CL, DL ;Guarda a linha em CL
 
-    NUM_INVALID_COLUNA:
+NUM_INVALID_COLUNA:
+    PUSH SI
+    PUSH BX
     NewLine
     LEA DX, MSG_COLUNA
     MOV AH,09h
@@ -402,7 +481,7 @@ getInput proc
 
     MOV CH, DL ;Guarda a linha em CH
 
-    NUM_INVALID_RESP:
+NUM_INVALID_RESP:
     NewLine
     LEA DX, MSG_RESP
     MOV AH,09h
@@ -417,17 +496,71 @@ getInput proc
     JA NUM_INVALID_RESP 
 
     MOV BH, DL ;Guarda a linha em BH
-
+    ADD BH, 48
+    MOV ENTRY, BH
     NewLine
-              
+
+    POP BX
+    POP SI
+
     RET
 getInput endp
 
-;Function Name: checkEntry
-;Description: Funtion used only to get number inputs
-;Register used: None
-checkEntry proc
+;Function Name: comperResp
+;Description: Funtion used compare de awnser with the solution
+;Register used: 
+comperResp PROC
 
+    XOR AX, AX
+    MOV AL, CH ;Recebe a Coluna 
+    XOR CH, CH ;Zera a parte alta do registrador e mantem linha em CL
+    MOV DH, ENTRY ;Recebe a Resposta
 
-checkEntry endp
+    XOR SI, SI
+
+    CMP MAP, 31h
+    JE SOL_MAP1
+    LEA BX, SOL_GAME2
+    ADD BX, AX
+    ADD SI, CX
+    MOV DL, [BX][SI]
+    CMP DH, DL
+    JE rightResp2
+    JMP WRONG_N
+
+SOL_MAP1:
+    LEA BX, SOL_GAME1
+    ADD BX, AX
+    ADD SI, CX
+    MOV DL, [BX][SI]
+    CMP DH, DL
+    JE rightResp1
+    JMP WRONG_N
+
+WRONG_N:
+    LEA DX, WRONG ;Imprimi mensagem de erro
+    MOV AH,09h
+    INT 21h
+    NewLine
+    LEA DX, CONTINUE ;Imprimi mensagem de erro
+    MOV AH,09h
+    INT 21h
+    MOV AH, 01h
+    INT 21H
+    JMP FIMPROC ;Pula para o RET
+
+rightResp1:
+    LEA BX, MAP_GAME1 ;Carrega matriz mapa
+    ADD BX, AX
+    MOV [BX][SI], DH ;Salva o valor correto na matriz mapa
+    JMP FIMPROC ;Pula para o RET
+
+rightResp2:
+    LEA BX, MAP_GAME2 ;Carrega matriz mapa
+    ADD BX, AX
+    MOV [BX][SI], DH ;Salva o valor correto na matriz mapa
+
+FIMPROC:
+    RET
+comperResp ENDP
 End MAIN
