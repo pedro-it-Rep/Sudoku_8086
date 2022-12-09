@@ -70,8 +70,8 @@ TITLE Sudoku_PedroTrevisan_RafaelPerroni
     INVOPT      DB "Opcao Invalida. Tente Novamente $"
 
     ; Input Prints
-    MSG_LINHA   DB "Digite o numero da linha: $"
-    MSG_COLUNA  DB "Digite o numero da coluna: $"
+    MSG_LINHA   DB "Digite o numero da linha <0 - 8>: $"
+    MSG_COLUNA  DB "Digite o numero da coluna <0 - 8>: $"
     MSG_RESP    DB "Digite o numero da resposta: $"
     GAME_SELECT DB "Qual mapa voce deseja jogar? $"
     MAP1        DB "1 - Mapa 1$"
