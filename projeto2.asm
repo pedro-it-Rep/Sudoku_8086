@@ -24,6 +24,7 @@ TITLE Sudoku_PedroTrevisan_RafaelPerroni
     BACKMENU    DB "<Pressione ENTER para voltar para o Menu> $"
     CONTINUE    DB "<Pressione ENTER para continuar> $"
     WRONG       DB "Resposta incorreta !!! $"
+    END         DB "PARABENS, VOCE ACERTOU TODOS OS NUMEROS!!!!!$"
 
     ; Game Maps
     MAP_GAME1	DB  36h, 30h, 32h, 37h, 30h, 30h, 39h, 30h, 34h,
@@ -114,7 +115,8 @@ ENDM
 MAIN PROC
 
     MOV AX, @DATA
-    MOV DS,AX
+    MOV DS, AX
+    MOV ES, AX
 
     call printMenu
 
@@ -345,10 +347,41 @@ GAME:
     CALL getInput
     CALL comperResp
 
+    ; Check if the game is over
+
     JMP playGame
 
 playGame ENDP
 
+;Function Name: checkWin
+;Description: Funtion used to check if the game is over
+;Register used: 
+checkWin proc
+
+    MOV CX, 395
+    CLD
+    MOV DI, BX
+    MOV AL, 30h
+    REPNE SCASB
+    JNZ WIN
+    RET
+
+WIN:
+    ClearScreen
+    MOV AH, 09H
+    LEA DX, END
+    INT 21h
+    NewLine
+    MOV AH, 09H
+    LEA DX, BACKMENU
+    INT 21h
+
+    ; Waits for a ENTER
+    MOV AH, 01h
+    INT 21H
+
+    call printMenu
+checkWin endp
 ;Function Name: printMap
 ;Description: Funtion used only to print the game structure
 ;Register used: None
